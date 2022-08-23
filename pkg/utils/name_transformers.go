@@ -32,12 +32,36 @@ func UpperCamel(name string) string {
 	return strings.Join(parts, "")
 }
 
-func DotNETNameTransform(name string) string {
+func DotNETJSON(name string) string {
 	var parts []string
 	for _, part := range strings.Split(name, "__") {
 		parts = append(parts, UpperCamel(part))
 	}
 	return strings.Join(parts, ":")
+}
+
+func LowerKebab(name string) string {
+	var parts []string
+	for _, part := range strings.Split(name, "_") {
+		if len(part) == 0 {
+			continue
+		}
+		parts = append(parts, strings.ToLower(part))
+
+	}
+	return strings.Join(parts, "-")
+}
+
+func JavaSpringProperty(name string) string {
+	var parts []string
+	for _, part := range strings.Split(name, "_") {
+		if part == "" { // Handle double-underscores
+			continue
+		}
+		parts = append(parts, LowerKebab(part))
+	}
+
+	return strings.Join(parts, ".")
 }
 
 func MapToEnvFormat(secrets map[string]string, wrapInQuotes bool) []string {
@@ -63,8 +87,22 @@ func MapToEnvFormat(secrets map[string]string, wrapInQuotes bool) []string {
 func MapToDotNETJSONFormat(secrets map[string]string) map[string]string {
 	var dotnetJSON = make(map[string]string)
 	for key, value := range secrets {
-		keyTransform := DotNETNameTransform(key)
+		keyTransform := DotNETJSON(key)
 		dotnetJSON[keyTransform] = value
 	}
 	return dotnetJSON
+}
+
+func MapToJavaSpringPropertiesFormat(secrets map[string]string) []string {
+	var properties []string
+	for key, value := range secrets {
+		properties = append(properties, fmt.Sprintf("%s=%s", JavaSpringProperty(key), value))
+	}
+
+	// sort keys alphabetically for deterministic order
+	sort.Slice(properties, func(a, b int) bool {
+		return properties[a] < properties[b]
+	})
+
+	return properties
 }

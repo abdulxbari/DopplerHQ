@@ -14,9 +14,14 @@ package utils
 
 import (
 	"regexp"
+	"strings"
 )
 
 func IsDotNETSettingsFile(fileName string) bool {
 	matched, _ := regexp.MatchString(`(?i)appsettings(\.[a-z0-9_-]+)?\.json`, fileName)
 	return matched
+}
+
+func IsJavaSpringPropertiesFile(fileName string) bool {
+	return strings.HasSuffix(fileName, "application.properties")
 }

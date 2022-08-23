@@ -19,17 +19,20 @@ const JSONMountFormat = "json"
 const EnvMountFormat = "env"
 const TemplateMountFormat = "template"
 const DotNETJSONMountFormat = "dotnet-json"
+const JavaSpringPropertiesFormat = "java-spring-properties"
 
 var SecretsMountFormats = []string{
 	EnvMountFormat,
 	JSONMountFormat,
 	DotNETJSONMountFormat,
+	JavaSpringPropertiesFormat,
 	TemplateMountFormat,
 }
 
 var SecretsMountFormatMap = map[string]string{
-	EnvMountFormat:        EnvMountFormat,
-	JSONMountFormat:       JSONMountFormat,
-	DotNETJSONMountFormat: DotNETJSONMountFormat,
-	TemplateMountFormat:   TemplateMountFormat,
+	EnvMountFormat:             EnvMountFormat,
+	JSONMountFormat:            JSONMountFormat,
+	DotNETJSONMountFormat:      DotNETJSONMountFormat,
+	JavaSpringPropertiesFormat: JavaSpringPropertiesFormat,
+	TemplateMountFormat:        TemplateMountFormat,
 }

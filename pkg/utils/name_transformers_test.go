@@ -41,8 +41,7 @@ func TestUpperCamel(t *testing.T) {
 		}
 	}
 }
-
-func TestDotNETNameTransform(t *testing.T) {
+func TestDotNETJSON(t *testing.T) {
 	testCases := []testCase{
 		{"TEST", "Test"},
 		{"TEST_", "Test"},
@@ -52,7 +51,27 @@ func TestDotNETNameTransform(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		nameTransform := DotNETNameTransform(testCase.name)
+		nameTransform := DotNETJSON(testCase.name)
+		if testCase.nameTransform != nameTransform {
+			t.Errorf("Expected '%s' to be '%s' but got '%s'", testCase.name, testCase.nameTransform, nameTransform)
+		}
+	}
+}
+
+func TestJavaSpringProperty(t *testing.T) {
+	testCases := []testCase{
+		{"DOPPLER_PROJECT", "doppler.project"},
+		{"DEBUG", "debug"},
+		{"SPRING_APPLICATION_NAME", "spring.application.name"},
+		{"SERVER_PORT", "server.port"},
+		{"SPRING_DATASOURCE_DRIVERCLASSNAME", "spring.datasource.driverclassname"},
+		{"SPRING__DATASOURCE__DRIVERCLASSNAME", "spring.datasource.driverclassname"}, // Fix double-underscores
+		{"SPRING_DATASOURCE_URL", "spring.datasource.url"},
+		{"SPRING__DATASOURCE_URL", "spring.datasource.url"}, // Fix double-underscores
+	}
+
+	for _, testCase := range testCases {
+		nameTransform := JavaSpringProperty(testCase.name)
 		if testCase.nameTransform != nameTransform {
 			t.Errorf("Expected '%s' to be '%s' but got '%s'", testCase.name, testCase.nameTransform, nameTransform)
 		}
@@ -78,5 +97,31 @@ func TestMapToDotNETJSONFormat(t *testing.T) {
 
 	if !reflect.DeepEqual(transformedSecrets, transformedSecretsResult) {
 		t.Errorf("Expected '%s' to be '%s' but got '%s'", secrets, transformedSecrets, transformedSecretsResult)
+	}
+}
+
+func TestMapToJavaSpringPropertiesFormat(t *testing.T) {
+	secrets := map[string]string{
+		"DOPPLER_PROJECT":                   "prd",
+		"DEBUG":                             "true",
+		"SPRING_APPLICATION_NAME":           "Spring Boot App",
+		"SERVER_PORT":                       "8081",
+		"SPRING_DATASOURCE_DRIVERCLASSNAME": "org.h2.Driver",
+		"SPRING__DATASOURCE_URL":            "jdbc:h2:mem:bootapp;DB_CLOSE_DELAY=-1", // Fix double-underscores
+	}
+
+	transformedSecrets := []string{
+		"debug=true",
+		"doppler.project=prd",
+		"server.port=8081",
+		"spring.application.name=Spring Boot App",
+		"spring.datasource.driverclassname=org.h2.Driver",
+		"spring.datasource.url=jdbc:h2:mem:bootapp;DB_CLOSE_DELAY=-1",
+	}
+
+	transformedSecretsResult := MapToJavaSpringPropertiesFormat(secrets)
+
+	if !reflect.DeepEqual(transformedSecrets, transformedSecretsResult) {
+		t.Errorf("\nExpected: '%s'\nReceived: '%s'", transformedSecrets, transformedSecretsResult)
 	}
 }

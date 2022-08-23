@@ -194,6 +194,9 @@ doppler run --mount secrets.json -- cat secrets.json`,
 				} else if strings.HasSuffix(mountPath, ".json") {
 					mountFormat = models.JSONMountFormat
 					utils.LogDebug(fmt.Sprintf("Detected %s format", mountFormat))
+				} else if utils.IsJavaSpringPropertiesFile(mountPath) {
+					mountFormat = models.JavaSpringPropertiesFormat
+					utils.LogDebug(fmt.Sprintf("Detected %s format", mountFormat))
 				} else {
 					parts := strings.Split(mountPath, ".")
 					detectedFormat := parts[len(parts)-1]

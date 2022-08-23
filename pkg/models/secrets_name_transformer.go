@@ -41,15 +41,20 @@ var TFVarTransformer = &SecretsNameTransformer{
 	Type:      "tf-var",
 	EnvCompat: true,
 }
+var DotNETEnvTransformer = &SecretsNameTransformer{
+	Name:      ".NET Env",
+	Type:      "dotnet-env",
+	EnvCompat: true,
+}
 var DotNETTransformer = &SecretsNameTransformer{
 	Name:      ".NET",
 	Type:      "dotnet",
 	EnvCompat: false,
 }
-var DotNETEnvTransformer = &SecretsNameTransformer{
-	Name:      ".NET (ENV)",
-	Type:      "dotnet-env",
-	EnvCompat: true,
+var JavaSpringPropertiesTransformer = &SecretsNameTransformer{
+	Name:      "Java Spring Properties",
+	Type:      "java-spring-properties",
+	EnvCompat: false,
 }
 
 var SecretsNameTransformersList = []*SecretsNameTransformer{
@@ -57,8 +62,9 @@ var SecretsNameTransformersList = []*SecretsNameTransformer{
 	CamelTransformer,
 	LowerSnakeTransformer,
 	TFVarTransformer,
-	DotNETTransformer,
 	DotNETEnvTransformer,
+	DotNETTransformer,
+	JavaSpringPropertiesTransformer,
 }
 
 var SecretsNameTransformerTypes []string

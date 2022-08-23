@@ -80,8 +80,10 @@ func MountSecrets(secrets map[string]string, format string, mountPath string, ma
 			return "", nil, Error{Err: err, Message: "Unable to marshall .NET formatted secrets to json"}
 		}
 		mountData = envStr
+	} else if format == models.JavaSpringPropertiesFormat {
+		mountData = []byte(strings.Join(utils.MapToJavaSpringPropertiesFormat(secrets), "\n"))
 	} else {
-		return "", nil, Error{Err: fmt.Errorf("invalid mount format. Valid formats are %s", models.SecretsMountFormats)}
+		return "", nil, Error{Err: fmt.Errorf("Invalid mount format. Valid formats are %s", models.SecretsMountFormats)}
 
 	}
 
