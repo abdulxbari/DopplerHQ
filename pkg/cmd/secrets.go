@@ -393,6 +393,20 @@ func deleteSecrets(cmd *cobra.Command, args []string) {
 }
 
 func downloadSecrets(cmd *cobra.Command, args []string) {
+	var secretsFilter []string
+	if receivedSTDIN() {
+		utils.LogDebug("STDIN detected. Attempting to parse as JSON...")
+		payload := readSTDIN()
+
+		var datadogJSON DatadogSecretsFilter
+		err := json.Unmarshal(payload, &datadogJSON)
+		if err == nil {
+			secretsFilter = datadogJSON.Secrets
+		} else {
+			utils.LogDebug("Unable to parse STDIN as JSON")
+		}
+	}
+
 	saveFile := !utils.GetBoolFlag(cmd, "no-file")
 	jsonFlag := utils.OutputJSON
 	localConfig := configuration.LocalConfig(cmd)
@@ -488,6 +502,20 @@ func downloadSecrets(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	if len(secretsFilter) > 0 {
+		var secretsJSON map[string]DatadogSecret
+		err := json.Unmarshal(body, &secretsJSON)
+		if err != nil {
+			utils.HandleError(err, "Unable to parse downloaded secrets")
+		}
+
+		body, err = filterSecrets(secretsFilter, secretsJSON)
+
+		if err != nil {
+			utils.HandleError(err, "Encountered error filtering secrets")
+		}
+	}
+
 	if !saveFile {
 		utils.Print(string(body))
 		return
@@ -580,6 +608,49 @@ func secretNamesValidArgs(cmd *cobra.Command, args []string, toComplete string) 
 		return names, cobra.ShellCompDirectiveNoFileComp
 	}
 	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+type DatadogSecretsFilter struct {
+	Version string   `json:"version"`
+	Secrets []string `json:"secrets"`
+}
+
+type DatadogSecret struct {
+	Error string `json:"error"`
+	Value string `json:"value"`
+}
+
+// This is used to determine if we have anything being passed in via STDIN
+// named pipe. The primary use for this currently is for the Datadog Agent
+// passing in JSON to `doppler secrets download`.
+func receivedSTDIN() bool {
+	info, err := os.Stdin.Stat()
+	if err != nil {
+		utils.HandleError(err, "Unable to stat STDIN")
+	}
+
+	// check if we're receiving STDIN from a named pipe
+	return info.Mode()&os.ModeNamedPipe != 0
+}
+
+func readSTDIN() []byte {
+	str, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		utils.HandleError(err, "Unable to read STDIN")
+	}
+	return str
+}
+
+func filterSecrets(filter []string, secrets map[string]DatadogSecret) ([]byte, error) {
+	filteredSecrets := make(map[string]DatadogSecret)
+	for secretKey, secretVal := range secrets {
+		for _, filterKey := range filter {
+			if filterKey == secretKey {
+				filteredSecrets[filterKey] = DatadogSecret{Error: "", Value: secretVal.Value}
+			}
+		}
+	}
+	return json.Marshal(filteredSecrets)
 }
 
 func init() {
