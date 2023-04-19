@@ -12,7 +12,7 @@ reports:
 active_scanners: "\n  - Gosec\n  - PatternSearch\n  - RepoNotEmpty\n  - Semgrep\n  - GoOSV\n  - GoVersionScanner\n  - GoPackageScanner\n  - ReportGoDep\n  - Trufflehog"
 
 # All scanners that will exit non-zero if they fail, or the String value "all"/"none"
-enforced_scanners: "all"
+enforced_scanners: "\n  - Gosec\n  - PatternSearch\n  - RepoNotEmpty\n  - Semgrep\n  - GoOSV\n  - GoVersionScanner\n  - GoPackageScanner\n  - ReportGoDep\n  - Trufflehog"
 
 scanner_configs:
   Semgrep:

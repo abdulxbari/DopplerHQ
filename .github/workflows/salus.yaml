@@ -17,7 +17,6 @@ jobs:
       env:
         SALUS_CONFIGURATION: "file://salus-config.yaml"
       with:
-        active_scanners: "\n  - Gosec\n  - PatternSearch\n  - RepoNotEmpty\n  - Semgrep\n  - GoOSV\n  - GoVersionScanner\n  - GoPackageScanner\n  - ReportGoDep\n  - Trufflehog"
         report_uri: file://./salus-report.txt
         report_format: txt
     - uses: actions/upload-artifact@master
