@@ -127,8 +127,12 @@ func MountSecrets(secrets []byte, mountPath string, maxReads int) (string, func(
 		return "", nil, Error{Err: err, Message: "Unable to mount secrets file"}
 	}
 
+	fifoExists := true
+
 	// cleanup named pipe on exit
 	cleanupFIFO := func() {
+		fifoExists = false
+
 		utils.LogDebug(fmt.Sprintf("Deleting secrets mount %s", mountPath))
 		if err := os.Remove(mountPath); err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
@@ -159,6 +163,9 @@ func MountSecrets(secrets []byte, mountPath string, maxReads int) (string, func(
 			// this operation blocks until the FIFO is opened for reads
 			f, err := os.OpenFile(mountPath, os.O_WRONLY, os.ModeNamedPipe) // #nosec G304
 			if err != nil {
+				if !fifoExists && errors.Is(err, fs.ErrNotExist) {
+					break
+				}
 				utils.HandleError(err, message)
 			}
 
@@ -166,10 +173,18 @@ func MountSecrets(secrets []byte, mountPath string, maxReads int) (string, func(
 			utils.LogDebug("Secrets mount opened by reader")
 
 			if _, err := f.Write(secrets); err != nil {
+				if !fifoExists && errors.Is(err, fs.ErrNotExist) {
+					break
+				}
+				cleanupFIFO()
 				utils.HandleError(err, message)
 			}
 
 			if err := f.Close(); err != nil {
+				if !fifoExists && errors.Is(err, fs.ErrNotExist) {
+					break
+				}
+				cleanupFIFO()
 				utils.HandleError(err, message)
 			}
 
